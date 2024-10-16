@@ -1,19 +1,17 @@
 package com.example.jwtAuthentication.controller;
 
-import com.example.jwtAuthentication.jwt.JwtService;
 import com.example.jwtAuthentication.model.User;
-import com.example.jwtAuthentication.repository.UserRepository;
 import com.example.jwtAuthentication.service.AuthenticationService;
 import com.example.jwtAuthentication.util.AuthenticationRequest;
 import com.example.jwtAuthentication.util.AuthenticationResponse;
 import com.example.jwtAuthentication.util.RegisterRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class TestController {
