@@ -24,16 +24,27 @@ public class TestController {
         this.authenticationService = authenticationService;
     }
 
+    /**
+     * Use this method to test authentication
+     */
     @GetMapping("/test")
     public ResponseEntity<String> testMethod(@AuthenticationPrincipal User user) {
         return new ResponseEntity<>("Successful", HttpStatus.OK);
     }
 
+
+    /**
+     * Login method which accepts username and password, returns a Jwt if successfully authenticated
+     */
     @PostMapping("/login")
     public ResponseEntity<AuthenticationResponse> authenticate(@RequestBody AuthenticationRequest request) {
         return ResponseEntity.ok(authenticationService.authenticate(request));
     }
 
+
+    /**
+     * Register method which accpets username, password and full-name, returns a Jwt after saving a new user in db
+     */
     @PostMapping("/register")
     public ResponseEntity<AuthenticationResponse> register(@RequestBody RegisterRequest request){
         return ResponseEntity.ok(authenticationService.register(request));
