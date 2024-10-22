@@ -1,13 +1,16 @@
 # JWT Authentication Project
 
-This project implements a JWT (JSON Web Token) based authentication system using Spring Boot. It provides secure endpoints for user registration, login, and a test endpoint to verify authentication.
+This project implements a JWT (JSON Web Token) based authentication system using Spring Boot. It provides secure endpoints for user registration, login, refresh token mechanism, logout functionality, and a test endpoint to verify authentication.
 
 ## Features
 
 1. User Registration
 2. User Login
 3. JWT-based Authentication
-4. Secure Endpoints
+4. Refresh Token Mechanism
+5. Secure Endpoints
+6. Logout Functionality
+7. Global Exception Handling
 
 ## API Endpoints
 
@@ -23,12 +26,13 @@ This project implements a JWT (JSON Web Token) based authentication system using
     "fullName": "string"
   }
   ```
-- **Response:** Returns a JWT token upon successful registration
+- **Response:** Returns JWT and refresh tokens upon successful registration
+- **Error:** Returns 409 CONFLICT if username already exists
 
 ### 2. Login
 - **Endpoint:** `/login`
 - **Method:** POST
-- **Description:** Authenticate a user and receive a JWT token
+- **Description:** Authenticate a user and receive tokens
 - **Request Body:**
   ```json
   {
@@ -36,51 +40,87 @@ This project implements a JWT (JSON Web Token) based authentication system using
     "password": "string"
   }
   ```
-- **Response:** Returns a JWT token upon successful authentication
+- **Response:** Returns JWT and refresh tokens upon successful authentication
 
-### 3. Test Authentication
+### 3. Refresh Token
+- **Endpoint:** `/refresh`
+- **Method:** POST
+- **Description:** Get new tokens using existing refresh token
+- **Request Body:**
+  ```json
+  {
+    "jwtToken": "string",
+    "refreshToken": "string"
+  }
+  ```
+- **Response:** Returns new JWT and refresh tokens
+
+### 4. Logout
+- **Endpoint:** `/logout`
+- **Method:** POST
+- **Description:** Invalidates the refresh token
+- **Authentication:** Requires valid JWT token
+- **Response:** Success message upon logout
+
+### 5. Test Authentication
 - **Endpoint:** `/test`
 - **Method:** GET
-- **Description:** A protected endpoint to test if the user is authenticated
-- **Authentication:** Requires a valid JWT token in the Authorization header
+- **Description:** A simple protected endpoint for users having ADMIN or USER role
+- **Authentication:** Requires valid JWT token
 - **Response:** Returns "Successful" if authenticated
 
 ## Authentication Flow
 
 1. **Registration:**
-    - User sends a POST request to `/register` with username, password, and full name.
-    - System creates a new user in the database with an encoded password.
-    - A JWT token is generated and returned to the user.
+   - User sends a POST request to `/register` with username, password, and full name
+   - System validates if username is unique
+   - Creates a new user in the database with an encoded password
+   - Generates and returns both JWT and refresh tokens
 
 2. **Login:**
-    - User sends a POST request to `/login` with username and password.
-    - System authenticates the user against the stored credentials.
-    - If successful, a new JWT token is generated and returned to the user.
+   - User sends a POST request to `/login` with credentials
+   - System authenticates the user
+   - Generates and returns both JWT and refresh tokens
 
-3. **Accessing Protected Resources:**
-    - User includes the JWT token in the Authorization header of the request.
-    - The `JwtAuthenticationFilter` intercepts the request and validates the token.
-    - If the token is valid, the user is granted access to the protected resource.
+3. **Token Refresh:**
+   - User sends both JWT and refresh tokens to `/refresh`
+   - If JWT is still valid, returns the same tokens
+   - If JWT expired but refresh token is valid, generates new tokens
+   - If refresh token expired, user must login again
+
+4. **Logout:**
+   - User sends POST request to `/logout`
+   - System invalidates the refresh token
+   - User must login again to access protected resources
+
+5. **Accessing Protected Resources:**
+   - User includes JWT token in Authorization header
+   - `JwtAuthenticationFilter` validates the token
+   - Access granted if token is valid
 
 ## Security Configuration
 
-- CSRF protection is disabled for this project.
-- Session management is set to stateless.
-- The `/login` endpoint is publicly accessible.
-- The `/test` endpoint requires either 'ADMIN' or 'USER' role.
-- A custom `JwtAuthenticationFilter` is added to the security filter chain.
+- CSRF protection is disabled for this project
+- Session management is set to stateless
+- The `/login` and `/register` endpoints are publicly accessible
+- The `/test` endpoint requires either 'ADMIN' or 'USER' role
+- Custom `JwtAuthenticationFilter` in security filter chain
 
 ## Key Components
 
-1. `TestController`: Handles registration, login, and test endpoints.
-2. `AuthenticationService`: Manages user registration and authentication logic.
-3. `SecurityConfig`: Configures security settings and filter chain.
-4. `JwtAuthenticationFilter`: Custom filter for JWT-based authentication.
-5. `JwtService`: Handles JWT token generation, validation, and parsing.
+1. `TestController`: Handles registration, login, refresh, logout, and test endpoints
+2. `AuthenticationService`: Manages user authentication operations
+3. `RefreshTokenService`: Handles refresh token operations
+4. `SecurityConfig`: Configures security settings
+5. `JwtAuthenticationFilter`: Custom JWT validation filter
+6. `JwtService`: Manages JWT operations
+7. `TestControllerAdvice`: Global exception handling
 
 ## Notes
 
-- The project uses a hardcoded secret key for JWT signing. In a production environment, this should be securely managed and not hard-coded.
-- Token expiration is set to 20 minutes by default.
-- The project is configured to use H2 in-memory database, which is suitable for development but should be replaced with a persistent database for production use.
-- The JWT secret key uses a 256-bit secret which is the minimum for Jwt and its represented in hexadecimal format for better readability. Spring auto selects the best algorithm to use according to the size of secret (HMAC with SHA-256 for me). Use bigger keys for better security. 
+- The project uses a hardcoded secret key for JWT signing. In a production environment, this should be securely managed and not hard-coded
+- JWT token expiration is set to 20 minutes by default
+- Refresh token expiration is configurable (default in days)
+- The project is configured to use H2 in-memory database, which is suitable for development but should be replaced with a persistent database for production use
+- The JWT secret key uses a 256-bit secret which is the minimum for JWT and is represented in hexadecimal format for better readability. Spring auto selects the best algorithm to use according to the size of secret (HMAC with SHA-256 for me). Use bigger keys for better security
+- Refresh Token used is a random String. Best practices would include jwt to make it completely stateless if logout features are not needed.
