@@ -4,6 +4,7 @@ import com.example.jwtAuthentication.model.User;
 import com.example.jwtAuthentication.service.AuthenticationService;
 import com.example.jwtAuthentication.util.AuthenticationRequest;
 import com.example.jwtAuthentication.util.AuthenticationResponse;
+import com.example.jwtAuthentication.util.RefreshRequest;
 import com.example.jwtAuthentication.util.RegisterRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +23,7 @@ public class TestController {
         this.authenticationService = authenticationService;
     }
 
+    
     /**
      * Use this method to test authentication
      */
@@ -35,7 +37,7 @@ public class TestController {
      * Login method which accepts username and password, returns a Jwt if successfully authenticated
      */
     @PostMapping("/login")
-    public ResponseEntity<AuthenticationResponse> authenticate(@RequestBody AuthenticationRequest request) {
+    public ResponseEntity<AuthenticationResponse> authenticateUser(@RequestBody AuthenticationRequest request) {
         return ResponseEntity.ok(authenticationService.authenticate(request));
     }
 
@@ -44,7 +46,25 @@ public class TestController {
      * Register method which accpets username, password and full-name, returns a Jwt after saving a new user in db
      */
     @PostMapping("/register")
-    public ResponseEntity<AuthenticationResponse> register(@RequestBody RegisterRequest request){
+    public ResponseEntity<AuthenticationResponse> registerUser(@RequestBody RegisterRequest request){
+        //todo add exception handling and logging everywhere in the app
         return ResponseEntity.ok(authenticationService.register(request));
     }
+
+
+
+    @PostMapping("/refresh")
+    public ResponseEntity<AuthenticationResponse> refreshToken(@RequestBody RefreshRequest request){
+        AuthenticationResponse response = authenticationService.refresh(request);
+        return ResponseEntity.ok(response);
+    }
+
+
+
+   @PostMapping("/logout")
+   public ResponseEntity<?> logout(@AuthenticationPrincipal User user){
+       authenticationService.logout(user);
+       return ResponseEntity.ok("Logged out successfully");
+   }
+
 }
