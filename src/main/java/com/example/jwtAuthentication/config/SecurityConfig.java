@@ -1,6 +1,6 @@
 package com.example.jwtAuthentication.config;
 
-import com.example.jwtAuthentication.jwt.JwtAuthenticationFilter;
+import com.example.jwtAuthentication.filter.JwtAuthenticationFilter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
