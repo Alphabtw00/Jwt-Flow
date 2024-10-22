@@ -1,4 +1,4 @@
-package com.example.jwtAuthentication.jwt;
+package com.example.jwtAuthentication.service;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
