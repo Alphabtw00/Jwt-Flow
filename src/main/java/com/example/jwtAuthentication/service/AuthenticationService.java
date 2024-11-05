@@ -73,7 +73,7 @@ public class AuthenticationService {
      * @return New Jwt Token for the registered user in response body
      */
     public AuthenticationResponse authenticate(AuthenticationRequest request){
-        var authenticationResponse = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())); // constructor used for un-authenticated requests without roles. If one of the AuthenticationProviders successfully authenticates the user, the AuthenticationManager (via ProviderManager) returns an authenticated Authentication object (full token with roles) //todo add try catch and then controller advice
+        var authenticationResponse = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())); // constructor used for un-authenticated requests without roles, just to check if credentials are valid and to match from database. If one of the AuthenticationProviders successfully authenticates the user, the AuthenticationManager (via ProviderManager) takes info from database and makes a full UserPasswordToken with roles and sets it in security context itself. //todo add try catch and then controller advice
         User user = (User) authenticationResponse.getPrincipal(); // principal returns an object which is of type UserDetails, could have used UserRepo or userDetailService as well.
         String jwtToken = jwtService.generateJwtToken(user);
         RefreshToken refreshToken = refreshTokenService.generateRefreshToken(user);
