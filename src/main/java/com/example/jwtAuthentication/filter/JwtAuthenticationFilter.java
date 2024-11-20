@@ -54,12 +54,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         jwtToken = authHeader.substring(7);
         username = jwtService.extractUsername(jwtToken);
 
-        if(username!=null && SecurityContextHolder.getContext().getAuthentication() == null){
+        if(username!=null && SecurityContextHolder.getContext().getAuthentication() == null){ //todo remove get authentication
             UserDetails userDetails = userDetailsService.loadUserByUsername(username); // userDetails stored in database
             if(jwtService.isJwtTokenValid(jwtToken, userDetails)){
 
                 // makes a new UserPasswordToken which is of type Authentication
-                // This constructor is used to create a token for fully authenticated user. Don't use it for initial login requests. Use auth manager for those type of requests.
+                // This constructor is used to create a token for fully authenticated user. This is used by authprovider after it has verified the credentials. Don't use it for initial login requests. Use auth manager for those type of requests.
+                //Constructor for unauthenticated credentials : "Here are credentials that need to be checked". Auth manager verifies iteself so we use this in login.
+                //Constructor for authenticated credentials (this): "These credentials have been verified, here's the proof (authorities)". Checking from database means credentials have been verified so we use this.
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities()); // Credentials set as null as this is a token for already authenticated user. Null credentials help securing as we dont want them remaining in context for too long. Use credentials only if password has been changed.
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request)); // Calls authentication.getDetails and build object from it. These details contain extra information about request like IP address, certificate serial number etc. WebAuthenticationDetailSource is an implementation of AuthenticationDetailsSource which allows getting details from web HTTP request.
                 SecurityContextHolder.getContext().setAuthentication(authToken);
